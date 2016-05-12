@@ -12,8 +12,7 @@ function! ftplugin#user#init(fname) abort
     if exists('b:did_ftplugin_user' . s:ident['id'])
       return 1
     endif
-    execute 'let b:did_ftplugin_user' . s:ident['id'] . ' = 1'
-    call s:let_undo_ftplugin('unlet! b:did_ftplugin_user' . s:ident['id'])
+    call ftplugin#user#let('b:did_ftplugin_user' . s:ident['id'], 1)
   elseif exists('b:did_ftplugin')
     return 1
   else
