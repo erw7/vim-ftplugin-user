@@ -16,6 +16,8 @@ function! ftplugin#user#init(fname) abort
     call s:let_undo_ftplugin('unlet! b:did_ftplugin_user' . s:ident['id'])
   elseif exists('b:did_ftplugin')
     return 1
+  else
+    let b:did_ftplugin = 1
   endif
   let b:save_cpo = &cpo
   set cpo&vim
