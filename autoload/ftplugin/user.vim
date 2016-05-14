@@ -57,8 +57,19 @@ function! ftplugin#user#map(lhs, rhs, mode, ...) abort
 endfunction
 
 function! ftplugin#user#let(var, val) abort
-  execute 'let ' . a:var . '=' . a:val
-  call s:let_undo_ftplugin('unlet! ' . a:var)
+  if a:var !~ '^b:'
+    let l:var = 'b:' . a:var
+  else
+    let l:var = a:var
+  endif
+  if !exists(l:var)
+    execute 'let ' . l:var . ' = ' . a:val
+    call s:let_undo_ftplugin('unlet! ' . l:var, '\<\%(un\)\=let!\= ' . l:var)
+  else
+    execute 'let ' . 'l:var_save = ' . l:var
+    execute 'let ' . l:var . ' = ' . a:val
+    call s:let_undo_ftplugin('let ' . l:var . ' = ' . l:var_save, '\<\%(un\)\=let\!\= ' . l:var)
+  endif
 endfunction
 
 function! ftplugin#user#command(name, cmd, ...) abort
@@ -66,10 +77,11 @@ function! ftplugin#user#command(name, cmd, ...) abort
   call s:let_undo_ftplugin('delcommand ' . a:name)
 endfunction
 
-function! s:let_undo_ftplugin(cmd) abort
+function! s:let_undo_ftplugin(cmd, ...) abort
+  let l:pat = (a:0 == 0 ? '\<' . a:cmd : a:1)
   if !exists('b:undo_ftplugin')
     let b:undo_ftplugin = a:cmd
-  elseif match(b:undo_ftplugin, '\<' . a:cmd) ==  -1
+  elseif match(b:undo_ftplugin, l:pat) ==  -1
     let b:undo_ftplugin .= ' | ' . a:cmd
   endif
 endfunction
