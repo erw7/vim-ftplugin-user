@@ -77,6 +77,11 @@ function! ftplugin#user#command(name, cmd, ...) abort
   call s:let_undo_ftplugin('delcommand ' . a:name)
 endfunction
 
+function! ftplugin#user#let_undo_ftplugin(cmd, ...) abort
+  let l:args = [a:cmd] + a:000
+  call call('s:let_undo_ftplugin', l:args)
+endfunction
+
 function! s:let_undo_ftplugin(cmd, ...) abort
   let l:pat = (a:0 == 0 ? '\<' . a:cmd : a:1)
   if !exists('b:undo_ftplugin')
