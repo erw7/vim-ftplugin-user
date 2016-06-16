@@ -1,12 +1,12 @@
 let s:ident = { 'id' : '', 'after' : '', }
 
 function! ftplugin#user#init(fname) abort
-  let l:ident = matchlist(a:fname, '\%(\%(/\|\\\)\(after\)\)\=\%(/\|\\\)ftplugin\%(/\|\\\)' . &filetype . '\%(\%(_\|/\|\\\)\(.\+\)\)\=\.vim$')
+  let l:ident = matchlist(a:fname, '\%(\%(/\|\\\)\(after\)\)\=\%(/\|\\\)ftplugin\%(/\|\\\)\([^_]\+\)\%(\%(_\|/\|\\\)\(.\+\)\)\=\.vim$')
   if empty(l:ident)
     echoerr 'ftplugin#user#init called with invalid argument.'
     return 1
   endif
-  let s:ident['id'] = '_' .  &filetype . (l:ident[1] != '' ? '_after' : '') . (l:ident[2] != '' ? '_' . l:ident[2] : '')
+  let s:ident['id'] = '_' . l:ident[2] . (l:ident[1] != '' ? '_after' : '') . (l:ident[3] != '' ? '_' . l:ident[3] : '')
   let s:ident['after'] = l:ident[1]
   if s:ident['after'] != ''
     if exists('b:did_ftplugin_user' . s:ident['id'])
