@@ -1,10 +1,16 @@
-describe 'ftplugin_user'
+filetype plugin on
 
+redir => g:pwd
+pwd
+redir END
+execute 'set runtimepath^=' . substitute(g:pwd, '\n', '', 'g') . '/t/runtime'
+execute 'set runtimepath+=' . substitute(g:pwd, '\n', '', 'g') . '/t/runtime/after'
+
+describe 'ftplugin_user'
   describe 'init'
 
     before
       new
-      setf test
     end
 
     after
@@ -12,54 +18,57 @@ describe 'ftplugin_user'
     end
 
     it 'typical init ftplugin'
-      Expect ftplugin#user#init('/home/hoge/.vim/ftplugin/test.vim') == 0
+      setf tinit01
       Expect b:did_ftplugin == 1
       redir => g:autocmd
-        autocmd ftplugin_user_test
+        autocmd ftplugin_user_tinit01
       redir END
       Expect g:autocmd == "\n--- Auto-Commands ---"
     end
 
     it 'typical abort init ftplugin'
       let b:did_ftplugin = 1
-      Expect ftplugin#user#init('/home/hoge/.vim/ftplugin/test.vim') == 1
+      setf tinit01
+      Expect exists('b:undo_ftplugin') == 0
     end
 
     it 'typical init after ftplugin'
-      Expect ftplugin#user#init('/home/hoge/.vim/after/ftplugin/test.vim') == 0
-      Expect b:did_ftplugin_user_test_after == 1
+      setf tinit02
+      Expect b:did_ftplugin_user_tinit02_after == 1
       redir => g:autocmd
-        autocmd ftplugin_user_test_after
+        autocmd ftplugin_user_tinit02_after
       redir END
       Expect g:autocmd == "\n--- Auto-Commands ---"
     end
 
     it 'typical abort init after ftplugin'
-      let b:did_ftplugin_user_test_after = 1
-      Expect ftplugin#user#init('/home/hoge/.vim/after/ftplugin/test.vim') == 1
+      let b:did_ftplugin_user_tinit02_after = 1
+      setf tinit02
+      Expect exists('b:undo_ftplugin') == 0
     end
-    it 'typical init after ftplugin with flag'
 
-      Expect ftplugin#user#init('/home/hoge/.vim/after/ftplugin/test_flag1.vim') == 0
-      Expect b:did_ftplugin_user_test_after_flag1 == 1
+    it 'typical init after ftplugin with flag'
+      setf tinit03
+      Expect b:did_ftplugin_user_tinit03_after_flag1 == 1
       redir => g:autocmd
-        autocmd ftplugin_user_test_after_flag1
+        autocmd ftplugin_user_tinit03_after_flag1
       redir END
       Expect g:autocmd == "\n--- Auto-Commands ---"
 
-      Expect ftplugin#user#init('/home/hoge/.vim/after/ftplugin/test/flag2.vim') == 0
-      Expect b:did_ftplugin_user_test_after_flag2 == 1
+      setf tinit04
+      Expect b:did_ftplugin_user_tinit04_after_flag1 == 1
       redir => g:autocmd
-        autocmd ftplugin_user_test_after_flag2
+        autocmd ftplugin_user_tinit04_after_flag1
       redir END
       Expect g:autocmd == "\n--- Auto-Commands ---"
     end
 
     it 'typical abort init after ftplugin with flag'
-      let b:did_ftplugin_user_test_after_flag1 = 1
-      Expect ftplugin#user#init('/home/hoge/.vim/after/ftplugin/test_flag1.vim') == 1
-      let b:did_ftplugin_user_test_after_flag2 = 1
-      Expect ftplugin#user#init('/home/hoge/.vim/after/ftplugin/test/flag2.vim') == 1
+      let b:did_ftplugin_user_tinit03_after_flag1 = 1
+      setf tinit03
+      Expect exists('b:undo_ftplugin') == 0
+      let b:did_ftplugin_user_tinit04_after_flag1 = 1
+      Expect exists('b:undo_ftplugin') == 0
     end
   end
 
@@ -108,13 +117,20 @@ describe 'ftplugin_user'
     end
 
     it 'typical autocmd'
-      call ftplugin#user#init('/home/hoge/.vim/ftplugin/test.vim')
-      call ftplugin#user#autocmd('SyntasticCheck', 'BufWritePost')
+      setf tautocmd01
       redir => g:autocmd
-        autocmd ftplugin_user_test
+        autocmd ftplugin_user_tautocmd01
       redir END
-      Expect g:autocmd =~ 'ftplugin_user_test\s\+BufWritePost\n\s\+<buffer=\d\+>\n\s\+SyntasticCheck'
-      Expect b:undo_ftplugin =~ 'execute "autocmd! ftplugin_user_test"'
+      Expect g:autocmd =~ 'ftplugin_user_tautocmd01\s\+BufWritePost\n\s\+<buffer=\d\+>\n\s\+SyntasticCheck'
+      Expect b:undo_ftplugin =~ 'execute "autocmd! ftplugin_user_tautocmd01"'
+    end
+
+    it 'autocmd for script local function'
+      setf tautocmd02
+      redir => g:autocmd
+        autocmd ftplugin_user_tautocmd02
+      redir END
+      Expect g:autocmd =~ 'ftplugin_user_tautocmd02\s\+BufWritePost\n\s\+<buffer=\d\+>\n\s\+call\s<SNR>' . b:ftplugin_tautocmd02_sid . '_SyntasticCheck'
     end
   end
 
@@ -142,6 +158,14 @@ describe 'ftplugin_user'
         map <F5>
       redir END
       Expect g:map =~ 'n\s\+<F5>\s\+\*@:make<CR>'
+    end
+
+    it 'map for script local function'
+      setf tmap01
+      redir => g:map
+        map <F5>
+      redir END
+      Expect g:map =~ 'n\s\+<F5>\s\+\*@:<C-U>call\s\+<SNR>' . b:ftplugin_tmap01_sid . '_make()<CR>'
     end
   end
 

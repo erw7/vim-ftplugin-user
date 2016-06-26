@@ -1,11 +1,22 @@
-let s:ident = { 'id' : '', 'after' : '', }
+let s:ident = { 'id' : '', 'after' : '', 'sid' : '' }
 
 function! ftplugin#user#init(fname) abort
-  let l:ident = matchlist(a:fname, '\%(\%(/\|\\\)\(after\)\)\=\%(/\|\\\)ftplugin\%(/\|\\\)\([^\_/]\+\)\%(\%(_\|/\|\\\)\(.\+\)\)\=\.vim$')
+  if has('win32')
+    let l:fname = substitute(a:fname, '\\', '/', 'g')
+  else
+    let l:fname = a:fname
+  endif
+  let l:ident = matchlist(l:fname, '\%(/\(after\)\)\=/ftplugin/\([^_/]\+\)\%(\%(_\|/\)\(.\+\)\)\=\.vim$')
   if empty(l:ident)
     echoerr 'ftplugin#user#init called with invalid argument.'
     return 1
   endif
+  try
+    let s:ident['sid'] = s:get_sid(expand(l:fname))
+  catch /E716/
+    echoerr "Can't get sid"
+    return 1
+  endtry
   let s:ident['id'] = '_' . l:ident[2] . (l:ident[1] != '' ? '_after' : '') . (l:ident[3] != '' ? '_' . l:ident[3] : '')
   let s:ident['after'] = l:ident[1]
   if s:ident['after'] != ''
@@ -29,7 +40,7 @@ endfunction
 function! ftplugin#user#end() abort
   let &cpo = b:save_cpo
   call s:let_undo_ftplugin('augroup! ftplugin_user' . s:ident['id'])
-  let s:ident = { 'id' : '', 'after' : '', }
+  let s:ident = { 'id' : '', 'after' : '', 'sid' : '' }
 endfunction
 
 function! ftplugin#user#setlocal(opt, ...) abort
@@ -46,13 +57,15 @@ function! ftplugin#user#setlocal(opt, ...) abort
 endfunction
 
 function! ftplugin#user#autocmd(cmd, event, ...) abort
-  execute 'autocmd ftplugin_user' . s:ident['id'] . ' ' . a:event . ' <buffer> ' . (a:0 != 0 ? ' nested ' : '') . a:cmd
+  let l:cmd = substitute(a:cmd, '\<s:', '<SNR>' . s:ident['sid'] . '_', 'g')
+  execute 'autocmd ftplugin_user' . s:ident['id'] . ' ' . a:event . ' <buffer> ' . (a:0 != 0 ? ' nested ' : '') . l:cmd
   call s:let_undo_ftplugin('execute "autocmd! ftplugin_user' . s:ident['id'] . '"')
 endfunction
 
 function! ftplugin#user#map(lhs, rhs, mode, ...) abort
+  let l:rhs = substitute(a:rhs, '<SID>', '<SNR>' . s:ident['sid'] . '_', 'g')
   let l:noremap = a:0 != 0 ? 'nore' : ''
-  execute a:mode . l:noremap . 'map <buffer> ' . a:lhs . ' ' . a:rhs
+  execute a:mode . l:noremap . 'map <buffer> ' . a:lhs . ' ' . l:rhs
   call s:let_undo_ftplugin('execute "' . a:mode . 'unmap <buffer> ' . a:lhs . '"')
 endfunction
 
@@ -88,5 +101,30 @@ function! s:let_undo_ftplugin(cmd, ...) abort
     let b:undo_ftplugin = a:cmd
   elseif match(b:undo_ftplugin, l:pat) ==  -1
     let b:undo_ftplugin .= ' | ' . a:cmd
+  endif
+endfunction
+
+function! s:scriptnames() abort
+  let l:result = ''
+  redir =>> l:result
+    silent scriptnames
+  redir END
+  return l:result
+endfunction
+
+function! s:get_sid(fname) abort
+  let l:fnames_dict = {}
+  let l:fnames = map(map(split(s:scriptnames(), '\n'), "substitute(v:val, '^\\s\\+', '', '')"), "split(v:val, ':\\s\\+')")
+  for l:fname in l:fnames
+    if has('win32') || has('win32unix')
+      let l:fnames_dict[tolower(substitute(expand(l:fname[1]), '\\', '/', 'g'))] = l:fname[0]
+    else
+      let l:fnames_dict[expand(l:fname[1])] = l:fname[0]
+    endif
+  endfor
+  if has('win32') || has('win32unix')
+    return l:fnames_dict[tolower(substitute(expand(a:fname), '\\', '/', 'g'))]
+  else
+    return l:fnames_dict[expand(a:fname)]
   endif
 endfunction
