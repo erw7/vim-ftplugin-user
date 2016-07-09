@@ -75,13 +75,15 @@ function! ftplugin#user#let(var, val) abort
   else
     let l:var = a:var
   endif
+  let l:val = s:to_string(a:val)
+
   if !exists(l:var)
-    execute 'let ' . l:var . ' = ' . a:val
+    execute 'let ' . l:var . ' = ' . l:val
     call s:let_undo_ftplugin('unlet! ' . l:var, '\<\%(un\)\=let!\= ' . l:var)
   else
     execute 'let ' . 'l:var_save = ' . l:var
-    execute 'let ' . l:var . ' = ' . a:val
-    call s:let_undo_ftplugin('let ' . l:var . ' = ' . l:var_save, '\<\%(un\)\=let\!\= ' . l:var)
+    execute 'let ' . l:var . ' = ' . l:val
+    call s:let_undo_ftplugin('let ' . l:var . ' = ' . s:to_string(l:var_save), '\<\%(un\)\=let\!\= ' . l:var)
   endif
 endfunction
 
@@ -126,5 +128,16 @@ function! s:get_sid(fname) abort
     return l:fnames_dict[tolower(substitute(expand(a:fname), '\\', '/', 'g'))]
   else
     return l:fnames_dict[expand(a:fname)]
+  endif
+endfunction
+
+function! s:to_string(val)
+  let l:res = ''
+  if type(a:val) == type("")
+    return "'" . substitute(a:val, "'", "''", 'g') . "'"
+  elseif type(a:val) == type(0.0)
+    return printf('%f', a:val)
+  else
+    return string(a:val)
   endif
 endfunction

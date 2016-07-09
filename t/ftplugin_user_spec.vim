@@ -179,9 +179,39 @@ describe 'ftplugin_user'
       close!
     end
 
-    it 'typical let'
+    it 'typical let for integer'
       call ftplugin#user#let('b:foo', 1)
       Expect b:foo == 1
+      Expect b:undo_ftplugin =~ 'unlet! b:foo'
+    end
+
+    it 'typical let for string'
+      call ftplugin#user#let('b:foo', "ab'cd")
+      Expect b:foo == "ab'cd"
+      Expect b:undo_ftplugin =~ 'unlet! b:foo'
+    end
+
+    it 'typical let for float'
+      call ftplugin#user#let('b:foo', 0.1)
+      Expect b:foo == 0.1
+      Expect b:undo_ftplugin =~ 'unlet! b:foo'
+    end
+
+    it 'typical let for array'
+      call ftplugin#user#let('b:foo', ['a', 'b', 1])
+      Expect b:foo == ['a', 'b', 1]
+      Expect b:undo_ftplugin =~ 'unlet! b:foo'
+    end
+
+    it 'typical let for dictionary'
+      call ftplugin#user#let('b:foo', {'a' : 'b'})
+      Expect b:foo == {'a':'b'}
+      Expect b:undo_ftplugin =~ 'unlet! b:foo'
+    end
+
+    it 'typical let for Funcref'
+      call ftplugin#user#let('b:foo', function('tr'))
+      Expect b:foo == function('tr')
       Expect b:undo_ftplugin =~ 'unlet! b:foo'
     end
 
@@ -200,11 +230,11 @@ describe 'ftplugin_user'
     end
 
     it 'typical let exists var twice'
-      let b:foo = 1
+      let b:foo = 0.1
       call ftplugin#user#let('b:foo', 2)
       call ftplugin#user#let('b:foo', 3)
       Expect b:foo == 3
-      Expect b:undo_ftplugin =~ 'let b:foo = 1'
+      Expect b:undo_ftplugin =~ 'let b:foo = 0.1'
     end
   end
 
