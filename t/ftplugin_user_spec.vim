@@ -21,7 +21,7 @@ describe 'ftplugin_user'
       setf tinit01
       Expect b:did_ftplugin == 1
       redir => g:autocmd
-        autocmd ftplugin_user_tinit01
+      autocmd ftplugin_user_tinit01
       redir END
       Expect g:autocmd == "\n--- Auto-Commands ---"
     end
@@ -36,7 +36,7 @@ describe 'ftplugin_user'
       setf tinit02
       Expect b:did_ftplugin_user_tinit02_after == 1
       redir => g:autocmd
-        autocmd ftplugin_user_tinit02_after
+      autocmd ftplugin_user_tinit02_after
       redir END
       Expect g:autocmd == "\n--- Auto-Commands ---"
     end
@@ -51,14 +51,14 @@ describe 'ftplugin_user'
       setf tinit03
       Expect b:did_ftplugin_user_tinit03_after_flag1 == 1
       redir => g:autocmd
-        autocmd ftplugin_user_tinit03_after_flag1
+      autocmd ftplugin_user_tinit03_after_flag1
       redir END
       Expect g:autocmd == "\n--- Auto-Commands ---"
 
       setf tinit04
       Expect b:did_ftplugin_user_tinit04_after_flag1 == 1
       redir => g:autocmd
-        autocmd ftplugin_user_tinit04_after_flag1
+      autocmd ftplugin_user_tinit04_after_flag1
       redir END
       Expect g:autocmd == "\n--- Auto-Commands ---"
     end
@@ -119,7 +119,7 @@ describe 'ftplugin_user'
     it 'typical autocmd'
       setf tautocmd01
       redir => g:autocmd
-        autocmd ftplugin_user_tautocmd01
+      autocmd ftplugin_user_tautocmd01
       redir END
       Expect g:autocmd =~ 'ftplugin_user_tautocmd01\s\+BufWritePost\n\s\+<buffer=\d\+>\n\s\+SyntasticCheck'
       Expect b:undo_ftplugin =~ 'execute "autocmd! ftplugin_user_tautocmd01"'
@@ -128,7 +128,7 @@ describe 'ftplugin_user'
     it 'autocmd for script local function'
       setf tautocmd02
       redir => g:autocmd
-        autocmd ftplugin_user_tautocmd02
+      autocmd ftplugin_user_tautocmd02
       redir END
       Expect g:autocmd =~ 'ftplugin_user_tautocmd02\s\+BufWritePost\n\s\+<buffer=\d\+>\n\s\+call\s<SNR>' . b:ftplugin_tautocmd02_sid . '_SyntasticCheck'
     end
@@ -147,7 +147,7 @@ describe 'ftplugin_user'
     it 'typical map with mode'
       call ftplugin#user#map('<F5>', ':make<CR>', 'n')
       redir => g:map
-        map <F5>
+      map <F5>
       redir END
       Expect g:map =~ 'n\s\+<F5>\s\+@:make<CR>'
     end
@@ -155,7 +155,7 @@ describe 'ftplugin_user'
     it 'typical noremap with mode'
       call ftplugin#user#map('<F5>', ':make<CR>', 'n', 1)
       redir => g:map
-        map <F5>
+      map <F5>
       redir END
       Expect g:map =~ 'n\s\+<F5>\s\+\*@:make<CR>'
     end
@@ -163,7 +163,7 @@ describe 'ftplugin_user'
     it 'map for script local function'
       setf tmap01
       redir => g:map
-        map <F5>
+      map <F5>
       redir END
       Expect g:map =~ 'n\s\+<F5>\s\+\*@:<C-U>call\s\+<SNR>' . b:ftplugin_tmap01_sid . '_make()<CR>'
     end
@@ -251,7 +251,7 @@ describe 'ftplugin_user'
     it 'typical command'
       call ftplugin#user#command('Foo', 'call Foo()')
       redir => g:command
-        command Foo
+      command Foo
       redir END
       Expect g:command =~ 'b\s\+Foo\s\+0\s\+call Foo()'
       Expect b:undo_ftplugin =~ 'delcommand Foo'
@@ -260,10 +260,18 @@ describe 'ftplugin_user'
     it 'typical command with args'
       call ftplugin#user#command('Foo', 'call Foo(<f-args>)', '-bar -nargs=*')
       redir => g:command
-        command Foo
+      command Foo
       redir END
       Expect g:command =~ 'b\s\+Foo\s\+\*\s\+call Foo(<f-args>)'
       Expect b:undo_ftplugin =~ 'delcommand Foo'
+    end
+
+    it 'command for script local function'
+      setf tcommand01
+      redir => g:command
+      command SetPath
+      redir END
+      Expect split(g:command, '\n')[1] =~ '\s\+b\s\+SetPath\s\+0\s\+call\s\+<SNR>' . b:ftplugin_tcommand01_sid . '_set_path()'
     end
   end
 end

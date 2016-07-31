@@ -88,7 +88,8 @@ function! ftplugin#user#let(var, val) abort
 endfunction
 
 function! ftplugin#user#command(name, cmd, ...) abort
-  execute 'command!' . (a:0 != 0 ? a:1 : '') . ' -buffer ' . a:name . ' ' . a:cmd
+  let l:cmd = substitute(a:cmd, '\<s:', '<SNR>' . s:ident['sid'] . '_', 'g')
+  execute 'command!' . (a:0 != 0 ? a:1 : '') . ' -buffer ' . a:name . ' ' . l:cmd
   call s:let_undo_ftplugin('delcommand ' . a:name)
 endfunction
 
