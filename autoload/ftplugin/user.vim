@@ -17,9 +17,9 @@ function! ftplugin#user#init(fname) abort
     echoerr "Can't get sid"
     return 1
   endtry
-  let s:ident['id'] = '_' . l:ident[2] . (l:ident[1] != '' ? '_after' : '') . (l:ident[3] != '' ? '_' . l:ident[3] : '')
+  let s:ident['id'] = '_' . l:ident[2] . (l:ident[1] !=? '' ? '_after' : '') . (l:ident[3] !=? '' ? '_' . l:ident[3] : '')
   let s:ident['after'] = l:ident[1]
-  if s:ident['after'] != ''
+  if s:ident['after'] !=? ''
     if exists('b:did_ftplugin_user' . s:ident['id'])
       return 1
     endif
@@ -46,11 +46,11 @@ endfunction
 function! ftplugin#user#setlocal(opt, ...) abort
   let l:opt = a:opt
   if a:0 == 0
-    execute "setlocal " . l:opt
+    execute 'setlocal ' . l:opt
   elseif a:0 == 1
-    execute "setlocal " . l:opt . "=" . a:1
+    execute 'setlocal ' . l:opt . '=' . a:1
   elseif a:0 == 2
-    execute "setlocal " . l:opt . a:2 . a:1
+    execute 'setlocal ' . l:opt . a:2 . a:1
   endif
   let l:opt = substitute(l:opt, '^no\(.\+\)', '\1', '')
   call s:let_undo_ftplugin('set ' . l:opt . '<')
@@ -70,7 +70,7 @@ function! ftplugin#user#map(lhs, rhs, mode, ...) abort
 endfunction
 
 function! ftplugin#user#let(var, val) abort
-  if a:var !~ '^b:'
+  if a:var !~# '^b:'
     let l:var = 'b:' . a:var
   else
     let l:var = a:var
@@ -132,9 +132,9 @@ function! s:get_sid(fname) abort
   endif
 endfunction
 
-function! s:to_string(val)
+function! s:to_string(val) abort
   let l:res = ''
-  if type(a:val) == type("")
+  if type(a:val) == type('')
     return "'" . substitute(a:val, "'", "''", 'g') . "'"
   elseif type(a:val) == type(0.0)
     return printf('%f', a:val)
