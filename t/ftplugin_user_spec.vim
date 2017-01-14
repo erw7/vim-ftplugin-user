@@ -167,6 +167,16 @@ describe 'ftplugin_user'
       redir END
       Expect g:map =~ 'n\s\+<F5>\s\+\*@:<C-U>call\s\+<SNR>' . b:ftplugin_tmap01_sid . '_make()<CR>'
     end
+
+    it 'Unmap of typical map with mode'
+      call ftplugin#user#map('<F5>', ':make<CR>', 'n')
+      Expect b:undo_ftplugin =~ 'nunmap <buffer> <F5>'
+    end
+
+    it 'Unmap of typical map with mode and map argument'
+      call ftplugin#user#map('<nowait> <silent><special> <script><expr> <F5>', ':make<CR>', 'n')
+      Expect b:undo_ftplugin =~ 'nunmap <buffer> <F5>'
+    end
   end
 
   describe 'let'

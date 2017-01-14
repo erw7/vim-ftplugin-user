@@ -66,7 +66,8 @@ function! ftplugin#user#map(lhs, rhs, mode, ...) abort
   let l:rhs = substitute(a:rhs, '<SID>', '<SNR>' . s:ident['sid'] . '_', 'g')
   let l:noremap = a:0 != 0 ? 'nore' : ''
   execute a:mode . l:noremap . 'map <buffer> ' . a:lhs . ' ' . l:rhs
-  call s:let_undo_ftplugin('execute "' . a:mode . 'unmap <buffer> ' . a:lhs . '"')
+  let l:lhs = substitute(a:lhs, '\%(<nowait>\|<silent>\|<special>\|<script>\|<expr>\|<unique>\)\s*', '', 'g')
+  call s:let_undo_ftplugin('execute "' . a:mode . 'unmap <buffer> ' . l:lhs . '"')
 endfunction
 
 function! ftplugin#user#let(var, val) abort
